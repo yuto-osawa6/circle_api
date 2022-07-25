@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter
-import schemas.task as task_schema
+import app.schemas.task as task_schema
 
 router = APIRouter()
 

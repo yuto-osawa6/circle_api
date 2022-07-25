@@ -1,9 +1,9 @@
 from typing import Optional
 from fastapi import FastAPI
-# from routers import task
+from app.routers import task
 
 app = FastAPI()
-# app.include_router(task.router)
+app.include_router(task.router)
 # app.include_router(done.router)
 
 @app.get("/")
