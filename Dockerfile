@@ -1,8 +1,11 @@
-FROM python:3.7
-# WORKDIR /app
-RUN pip3 install fastapi uvicorn
+FROM python:3.9-buster
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+# RUN pip3 install fastapi uvicorn
+
 # pipを使ってpoetryをインストール
-RUN pip install poetry
+# RUN pip install poetry
 
 # poetryの定義ファイルをコピー (存在する場合)
 COPY pyproject.toml* poetry.lock* ./
