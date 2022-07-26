@@ -1,11 +1,11 @@
 FROM python:3.9-buster
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
+# COPY requirements.txt .
+# RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 # RUN pip3 install fastapi uvicorn
 
 # pipを使ってpoetryをインストール
-# RUN pip install poetry
+RUN pip install poetry
 
 # poetryの定義ファイルをコピー (存在する場合)
 COPY pyproject.toml* poetry.lock* ./
@@ -16,4 +16,4 @@ RUN if [ -f pyproject.toml ]; then poetry install; fi
 
 
 COPY ./app /app
-CMD ["uvicorn","--reload","app.main:app","--host","0.0.0.0","--port","8080"]
+CMD ["poetry", "run","uvicorn","--reload","app.main:app","--host","0.0.0.0","--port","8080"]
