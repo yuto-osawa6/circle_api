@@ -17,7 +17,7 @@ async def create_task(
     await db.refresh(task)
     return task
 
-async def get_tasks_with_done(db: AsyncSession) -> List[Tuple[int, int, int]]:
+async def get_tasks_with_done(db: AsyncSession):
 # async def get_tasks_with_done(db: AsyncSession) -> List[Optional[task_model.Done]]:
 
     result: Result = await (
@@ -30,10 +30,20 @@ async def get_tasks_with_done(db: AsyncSession) -> List[Tuple[int, int, int]]:
             ).outerjoin(task_model.Done)
         )
     )
+
+    result2: Result = await (
+        db.execute(
+            select(
+                task_model.Task.id,
+                task_model.Task.title,
+                task_model.Done.id.isnot(None).label("done"),
+            ).outerjoin(task_model.Done)
+        )
+    )
     # print("aaaaa")
 
-    # print(result.all())
-    return result.all()
+    # print()
+    return {"data":result.all(),"status":200}
 
 async def get_task(db: AsyncSession, task_id: int) -> Optional[task_model.Task]:
     result: Result = await db.execute(

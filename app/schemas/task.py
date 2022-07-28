@@ -34,7 +34,12 @@ class TaskCreateResponse(TaskCreate):
 class Task(TaskBase):
     id: int
     # title2: str
-    done: bool = Field(False, description="完了フラグ")
+    done: int = Field(1, description="完了フラグ")
 
     # class Config:
         # orm_mode = True
+
+class Task():
+    id: int
+        # title2: str
+    done: int = Field(1, description="完了フラグ")
