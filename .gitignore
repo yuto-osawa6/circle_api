@@ -25,3 +25,5 @@ archive.zip
 .*.sw?
 
 # app/env.py
+
+account_key.json

@@ -44,6 +44,8 @@ async def get_tasks_with_done(db: AsyncSession):
 
     # print()
     return {"data":result.all(),"status":200}
+    # return result.all()
+
 
 async def get_task(db: AsyncSession, task_id: int) -> Optional[task_model.Task]:
     result: Result = await db.execute(
