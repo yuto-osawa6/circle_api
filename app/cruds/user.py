@@ -19,7 +19,7 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials=Depends(HTTPBeare
         # print(cred)
         decoded_token = auth.verify_id_token(cred.credentials)
         print(decoded_token)
-        print("aefijaeiofjaoifje")
+        # print("aefijaeiofjaoifje")
     except Exception as err:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
