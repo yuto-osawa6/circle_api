@@ -15,6 +15,7 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials=Depends(HTTPBeare
             detail="Bearer authentication required",
             headers={'WWW-Authenticate': 'Bearer realm="auth_required"'},
         )
+        
     try:
         # print(cred)
         decoded_token = auth.verify_id_token(cred.credentials)
