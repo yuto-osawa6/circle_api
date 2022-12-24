@@ -1,8 +1,8 @@
 """Added columns.
 
-Revision ID: d36b24d0ee0e
+Revision ID: 47800f214bca
 Revises: 
-Create Date: 2022-07-26 14:30:33.644499
+Create Date: 2022-12-24 17:32:46.792024
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd36b24d0ee0e'
+revision = '47800f214bca'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -29,6 +29,7 @@ def upgrade() -> None:
     op.create_table('tasks',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('title', sa.String(length=1024), nullable=True),
+    sa.Column('title2', sa.String(length=1024), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('adones',
