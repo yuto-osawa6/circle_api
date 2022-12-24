@@ -16,6 +16,8 @@ from pydantic import BaseModel, Field
 #     class Config:
 #         orm_mode = True
 
+
+
 class TaskBase(BaseModel):
     title: Optional[str] = Field(None, example="クリーニングを取りに行く")
 

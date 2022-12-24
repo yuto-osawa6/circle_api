@@ -9,7 +9,8 @@ app.include_router(task.router)
 
 @app.get("/")
 def read_root():
-    return {"Hello": "World32"}
+    # return {"Hello": "World32"}
+    return {"email": "World32","token2": "","afe":"afe"}
 
 @app.get("/product")
 def read_root():
@@ -21,5 +22,5 @@ def read_item(item_id: int, q: Optional[str] = None):
 
 @app.get("/api/me")
 async def hello_user(user = Depends(get_user)):
-    # print(user)
+    print(user)
     return {"msg":"Hello, user","uid":user['uid']} 
