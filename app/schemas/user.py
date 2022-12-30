@@ -18,30 +18,30 @@ from pydantic import BaseModel, Field
 
 
 
-class TaskBase(BaseModel):
-    title: Optional[str] = Field(None, example="クリーニングを取りに行く")
-    title2: Optional[str] = Field(None, example="クリーニングを取りに行く2")
+class UserBase(BaseModel):
+    # title: Optional[str] = Field(None, example="クリーニングを取りに行く")
+    id:int
 
-class TaskCreate(TaskBase):
+class UserCreate(UserBase):
     pass
 
 
-class TaskCreateResponse(TaskCreate):
+class UserCreateResponse(UserCreate):
     id: int
 
     # class Config:
     #     orm_mode = True
 
 
-class Task(TaskBase):
+class User(UserBase):
     id: int
     # title2: str
-    done: int = Field(1, description="完了フラグ")
+    # done: int = Field(1, description="完了フラグ")
 
     # class Config:
         # orm_mode = True
 
-class Task():
+class User():
     id: int
         # title2: str
-    done: int = Field(1, description="完了フラグ")
+    # done: int = Field(1, description="完了フラグ")

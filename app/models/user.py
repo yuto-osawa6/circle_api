@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Boolean,Text
 from sqlalchemy.orm import relationship
 
 from app.db import Base
@@ -7,11 +7,13 @@ from app.db import Base
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key = True, index=True)
-    uid = Column(Integer)
-    email = Column(String)
+    uid = Column(String(768), unique=True, nullable=False)
+    email = Column(String(768), unique=True, nullable=False)
+    cid = Column(String(768), unique=True, nullable=False, index=True)
+    first_time = Column(Boolean, nullable=False, default=False)
     # title2 = Column(String(1024))
 
-#     done = relationship("Done", back_populates="task")
+    user_detail = relationship("UserDetail", back_populates="user", uselist=False)
 
 
 class UserDetail(Base):
@@ -19,6 +21,6 @@ class UserDetail(Base):
 
     id = Column(Integer, primary_key = True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    name = Column(String(100))
+    name = Column(String(1024))
 
-    # task = relationship("Task", back_populates="done")
+    user = relationship("User", back_populates="user_detail")

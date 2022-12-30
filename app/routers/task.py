@@ -1,11 +1,14 @@
 from typing import List
 # from fastapi import APIRouter
 import app.schemas.task as task_schema
+import app.schemas.user as user_schema
+
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.cruds.task as task_crud
+import app.cruds.ota as ota_crud
 from app.db import get_db
 
 router = APIRouter()
@@ -32,3 +35,11 @@ async def update_task(
         raise HTTPException(status_code=404, detail="Task not found")
 
     return await task_crud.update_task(db, task_body, original=task)
+
+@router.post("/ota", response_model=task_schema.TaskCreateResponse)
+async def list_tasks(task_body:task_schema.TaskCreate,db: AsyncSession = Depends(get_db)):
+    return await ota_crud.ota(db,task_body)
+
+# @router.get("/ota")
+# async def list_tasks(db: AsyncSession = Depends(get_db)):
+#     return await ota_crud.ota(db)
