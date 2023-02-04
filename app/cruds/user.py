@@ -135,7 +135,7 @@ async def get_or_create_user(db: AsyncSession,decoded_token):
         pass
 
         print("user:")
-        print(vars(user[0]))
+        # print(vars(user[0]))
         # print("aa")
 
         print(user[0] if user is not None else None)
