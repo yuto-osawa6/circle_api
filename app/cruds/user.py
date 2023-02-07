@@ -106,7 +106,7 @@ async def get_or_create_user(db: AsyncSession,decoded_token):
     #     )
     try:
         # print(cred)
-        print("kkokooo")
+        # print("kkokooo")
         # decoded_token = auth.verify_id_token(cred.credentials)
 
         result: Result = await db.execute(
