@@ -13,14 +13,15 @@ from typing import List, Tuple, Optional
 import uuid
 
 
-
-
 # cred = credentials.Certificate('./account_key.json')
 # app/account_key.json
 cred = credentials.Certificate('./app/account_key.json')
 firebase_admin.initialize_app(cred)
 
-def get_user(res: Response, cred: HTTPAuthorizationCredentials=Depends(HTTPBearer(auto_error=False))):
+
+def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))):
+    print(cred is None)
+    print("cred")
     if cred is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -96,8 +97,9 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials=Depends(HTTPBeare
 #     return user
 
 
-
-async def get_or_create_user(db: AsyncSession,decoded_token):
+async def get_or_create_user(db: AsyncSession, decoded_token):
+    print(decoded_token)
+    print("print(decoded_token)")
     # if cred is None:
     #     raise HTTPException(
     #         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -110,13 +112,12 @@ async def get_or_create_user(db: AsyncSession,decoded_token):
         # decoded_token = auth.verify_id_token(cred.credentials)
 
         result: Result = await db.execute(
-        select(user_model.User).filter(
-            user_model.User.uid == decoded_token['uid'],
-            user_model.User.email == decoded_token['email']
+            select(user_model.User).filter(
+                user_model.User.uid == decoded_token['uid'],
+                user_model.User.email == decoded_token['email']
             )
         )
         user: Optional[Tuple[user_model.User]] = result.first()
-
 
         # print(user)
         # print(user[0] if user is not None else None)
@@ -124,9 +125,9 @@ async def get_or_create_user(db: AsyncSession,decoded_token):
             print("No")
             # create
             user = user_model.User(
-                uid = decoded_token['uid'],
-                email = decoded_token['email'],
-                cid = str(uuid.uuid4())
+                uid=decoded_token['uid'],
+                email=decoded_token['email'],
+                cid=str(uuid.uuid4())
             )
             db.add(user)
             await db.commit()
