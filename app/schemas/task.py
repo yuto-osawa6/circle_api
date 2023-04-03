@@ -20,7 +20,7 @@ from pydantic import BaseModel, Field
 
 class TaskBase(BaseModel):
     title: Optional[str] = Field(None, example="クリーニングを取りに行く")
-
+    title2: Optional[str] = Field(None, example="クリーニングを取りに行く2")
 
 class TaskCreate(TaskBase):
     pass
@@ -28,9 +28,10 @@ class TaskCreate(TaskBase):
 
 class TaskCreateResponse(TaskCreate):
     id: int
+    title3:Optional[str] = Field(None, example="クリーニングを取りに行く3")
 
-    # class Config:
-    #     orm_mode = True
+    class Config:
+        orm_mode = True
 
 
 class Task(TaskBase):

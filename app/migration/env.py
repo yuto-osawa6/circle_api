@@ -9,6 +9,10 @@ import app.db
 # import app.models.task
 import app.models.task
 import app.models.task2
+import app.models.user
+import app.models.group
+
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
