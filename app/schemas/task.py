@@ -28,9 +28,10 @@ class TaskCreate(TaskBase):
 
 class TaskCreateResponse(TaskCreate):
     id: int
+    title3:Optional[str] = Field(None, example="クリーニングを取りに行く3")
 
-    # class Config:
-    #     orm_mode = True
+    class Config:
+        orm_mode = True
 
 
 class Task(TaskBase):

@@ -1,6 +1,6 @@
 from typing import Optional
 from fastapi import FastAPI, Depends
-from app.routers import task
+from app.routers import task,group
 from app.cruds.user import get_user
 from app.cruds.user import get_or_create_user
 
@@ -13,12 +13,19 @@ from app.db import get_db
 
 app = FastAPI()
 app.include_router(task.router)
+app.include_router(group.router)
+
 # app.include_router(done.router)
 
 @app.get("/")
 def read_root():
     # return {"Hello": "World32"}
     return {"email": "World32","token2": "","afe":"afe"}
+
+# @app.get("/hello")
+# def hello():
+#     return{"a":"hello"}
+
 
 # @app.get("/ota")
 # def read_root():

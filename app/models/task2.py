@@ -93,3 +93,59 @@ class Done(Base):
 
 #     book = relationship("Book", back_populates="authors")
 #     author = relationship("Author", back_populates="books")
+
+# create
+
+# @app.post("/users/")
+# async def create_user(user: UserCreate):
+#     async with async_session() as session:
+#         db_user = User(**user.dict())
+#         session.add(db_user)
+#         await session.commit()
+#         await session.refresh(db_user)
+#         return db_user
+
+# delete
+# @app.delete("/users/{user_id}")
+# async def delete_user(user_id: int):
+#     async with async_session() as session:
+#         user = await session.get(User, user_id)
+#         if user is None:
+#             return {"error": "User not found"}
+#         session.delete(user)
+#         await session.commit()
+#         return {"message": "User deleted successfully"}
+
+# get
+# @app.get("/users/{user_id}", response_model=UserOut)
+# async def read_user(user_id: int):
+#     async with async_session() as session:
+#         user = await session.get(User, user_id)
+#         if user is None:
+#             return {"error": "User not found"}
+#         return user]
+
+
+# from typing import List, Optional
+# from pydantic import BaseModel
+
+# class ItemBase(BaseModel):
+#     name: str
+#     price: float
+#     description: Optional[str] = None
+
+# class ItemCreate(ItemBase):
+#     pass
+
+# class ItemUpdate(ItemBase):
+#     pass
+
+# class Item(ItemBase):
+#     id: int
+
+#     class Config:
+#         orm_mode = True
+
+
+
+

@@ -16,9 +16,8 @@ import string
 import itertools
 import uuid
 
-# def sample(**args):
-#     print(args)
-
+def sample(**args):
+    print(args)
 # sample(name='Tom', age='25', gender='male') # {'name': 'Tom', 'age': '25', 'gender': 'male'}
 def get_random_str(num):
     return ''.join(random.choices(string.ascii_letters + string.digits, k=num))
