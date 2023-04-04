@@ -7,7 +7,8 @@ import app.models.group as group_model
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 
-async def create_group(db: AsyncSession,group_create: group_schema.GroupCreate):
+async def create_group(db: AsyncSession,group_create: group_schema.GroupCreate,token):
+    print(token)
     # try:
     print(group_create)
     print(group_create.dict())
