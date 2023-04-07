@@ -18,7 +18,7 @@ class Group(Base):
 
 class GroupUser(Base):
     __tablename__ = "group_users"
-    id = Column(Integer, primary_key=True, index=True)
+    # id = Column(Integer, primary_key=True, index=True)
     authority = Column(Integer, default=0, nullable=False)
     group_id = Column(Integer, ForeignKey("groups.id"), primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)

@@ -9,7 +9,7 @@ class GroupCreate(GroupBase):
     level: int = Field(example=1)
     name:str
 
-    users: List[int] = Field(example=[1,2])
+    # users: List[int] = Field(example=[1,2])
 
     class Config:
         orm_mode = True

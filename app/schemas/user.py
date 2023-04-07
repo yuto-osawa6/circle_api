@@ -35,6 +35,9 @@ class UserCreateResponse(UserCreate):
 
 class User(UserBase):
     id: int
+
+    # class Config:
+    #     orm_mode = True
     # title2: str
     # done: int = Field(1, description="完了フラグ")
 

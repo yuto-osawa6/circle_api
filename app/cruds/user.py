@@ -11,6 +11,7 @@ import app.schemas.user as user_schema
 from sqlalchemy.engine import Result
 from typing import List, Tuple, Optional
 import uuid
+import requests
 
 
 # cred = credentials.Certificate('./account_key.json')
@@ -120,6 +121,10 @@ async def get_or_create_user(db: AsyncSession, decoded_token):
         user: Optional[Tuple[user_model.User]] = result.first()
 
         # print(user)
+        print(f"user0:{user}")
+        print(f"user1:{user[0]}")
+        print(f"user02:{user[0].email}")
+
         # print(user[0] if user is not None else None)
         if user == None:
             print("No")
@@ -136,7 +141,10 @@ async def get_or_create_user(db: AsyncSession, decoded_token):
         pass
 
         print("user:")
-        print(vars(user[0]))
+        # print(vars(user[0]))
+        print()
+        print(f"user:{user}")
+        print(user[0])
         print("aa")
 
         print(user[0] if user is not None else None)
@@ -156,3 +164,67 @@ async def get_or_create_user(db: AsyncSession, decoded_token):
         )
     # res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'
     return user[0]
+
+
+async def get_user2(db: AsyncSession, decoded_token):
+    print(decoded_token)
+    print("print(decoded_token)")
+    try:
+        result: Result = await db.execute(
+            select(user_model.User).filter(
+                user_model.User.uid == decoded_token['uid'],
+                user_model.User.email == decoded_token['email']
+            )
+        )
+        # print(f"user1:{result.all()}")
+        # print(f"user2:{result.first()}")
+        user: Optional[Tuple[user_model.User]] = result.first()
+        print(user)
+        print(user[0] if user is not None else None)
+        if user is None:
+            raise HTTPException(status_code=404, detail='User not found')
+        # # pass
+        print(f"user:{user}")
+        print(f"user:{user[0]}")
+
+        return user[0]
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail='Server Error')
+    
+# async def get_user_by_token(db: AsyncSession,res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))):
+#     if cred is None:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="Bearer authentication required",
+#             headers={'WWW-Authenticate': 'Bearer realm="auth_required"'},
+#         )
+#     try:
+#         print(cred)
+#         decoded_token = auth.verify_id_token(cred.credentials)
+#         # print(decoded_token)
+#         print("aefijaeiofjaoifje")
+#         print(decoded_token['uid'])
+#         print(decoded_token['email'])
+#     except Exception as err:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail=f"Invalid authentication credentials. {err}",
+#             headers={'WWW-Authenticate': 'Bearer error="invalid_token"'},
+#         )
+#     res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'
+#     try:
+#         result: Result = await db.execute(
+#             select(user_model.User).filter(
+#                 user_model.User.uid == decoded_token['uid'],
+#                 user_model.User.email == decoded_token['email']
+#             )
+#         )
+#         user: Optional[Tuple[user_model.User]] = result.first()
+#         if user == None:
+#             raise HTTPException(status_code=404, detail='User not found')
+#         # # pass
+#         # return user[0]
+#         return user_schema.User(uid=decoded_token['uid'], email=decoded_token['email'])
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail='Server Error')
