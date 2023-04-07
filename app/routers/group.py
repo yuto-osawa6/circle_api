@@ -40,24 +40,22 @@ def hello():
 #     # user:user_schema.User = await get_user2(await db.connection(), token)
 #     return await group_crud.create_group3(db,body)
 
-@router.post("/groups", response_model=group_schema.GroupCreate)
+@router.post("/groups", response_model=group_schema.GroupCreateResponse)
 async def create_group(body: group_schema.GroupCreate,db: AsyncSession = Depends(get_db),token = Depends(get_user)):
-    # user = await get_user2(await db.connection(),token)
     user = await get_user2(db,token)
-
-    # print(f"user:{user}")
-    # print(user.id)
-    # user:user_schema.User = await get_user2(await db.connection(), token)
     return await group_crud.create_group4(db,body,user)
 
-# 消しちゃダメ
-# @router.post("/groups", response_model=group_schema.GroupCreate)
-# async def create_group(body: group_schema.GroupCreate,db: AsyncSession = Depends(get_db),token = Depends(get_user)):
-#     # user = await get_user_by_token(db,body)
-#     return await group_crud.create_group(db,body,token)
+@router.get("/groups/{group_id}",response_model = group_schema.ShowGroup)
+async def get_group(group_id: int, db: AsyncSession = Depends(get_db)):
+    return await group_crud.get_group_by_id(db,group_id)
 
-# @router.post("/tasks", response_model=task_schema.TaskCreateResponse)
-# async def create_task(
-#     task_body: task_schema.TaskCreate, db: AsyncSession = Depends(get_db)
-# ):
-#     return await task_crud.create_task(db, task_body)
+@router.get("/users/{user_id}/groups", response_model=group_schema.ReadUserGroup)
+# async def read_groups(user_id: int, db: AsyncSession = Depends(get_db),token = Depends(get_user)):
+async def read_groups(user_id: int, db: AsyncSession = Depends(get_db)):
+
+    # user = await get_user2(db,token)
+    # skip = (page - 1) * limit
+    # users = await group_crud.get_groups(db, skip=skip, limit=limit)
+    # # return {"users": users}
+    # return await group_crud.get_user_groups(db,user_id,user,1,30)
+    return await group_crud.get_user_groups(db,user_id,1,30)

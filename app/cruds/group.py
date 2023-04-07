@@ -1,17 +1,23 @@
 from typing import Optional
 from fastapi import FastAPI, Depends, HTTPException, status
-from app.routers import task
-import app.schemas.group as group_schema
-import app.models.group as group_model
-
-import app.schemas.user as user_schema
-
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import get_db
 from app.cruds.user import get_user2
 
+# schema
+import app.schemas.group as group_schema
+import app.schemas.user as user_schema
+# model
+import app.models.group as group_model
+import app.models.user as user_model
+
 # traceback
 import traceback
+
+from typing import List, Tuple, Optional
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from sqlalchemy.engine import Result
 
 # async def create_group(db: AsyncSession,group_create: group_schema.GroupCreate,token):
 #     # user = await get_user2(db,token)
@@ -207,7 +213,7 @@ async def create_group4(db: AsyncSession, group_create: group_schema.GroupCreate
         db.add(group)
         # await db.flush()
         print(f"group:{group.id}")
-        print(f"group:{group}")
+        print(f"group:{vars(group)}")
 
         db_group_user = group_model.GroupUser(
             group=group, user_id=user.id, authority=0)
@@ -215,6 +221,8 @@ async def create_group4(db: AsyncSession, group_create: group_schema.GroupCreate
         await db.commit()
         await db.refresh(group)
         await db.refresh(db_group_user)
+        print(f"group2:{vars(group)}")
+        print(f"group2:{group.id}")
         return group
     except Exception as e:
         print(f"error:{e}")
@@ -224,4 +232,39 @@ async def create_group4(db: AsyncSession, group_create: group_schema.GroupCreate
 
 # show group
 
+async def get_group_by_id(db: AsyncSession, group_id: int) -> group_schema.ShowGroup:
+    group =await db.query(group_model.Group).filter(group_model.Group.id == group_id).first()
+    users = await db.query(user_model.User).join(group_model.GroupUser).filter(group_model.Group.GroupUser.group_id == group_id).all()
+    return {"group": group, "users": users}
+
+
+# get group by user
+# async def get_user_groups(db: AsyncSession,user_id:int,user:user_model.User,  page: int = 1,limit: int = 20):
+async def get_user_groups(db: AsyncSession,user_id:int,  page: int = 1,limit: int = 20):
+
+    # ユーザーの存在確認
+    # user1 = await db.query(user_model.User).filter(user_model.id == user_id).first_async()
+    # async with db.begin():
+    result: Result = await db.execute(
+        select(user_model.User).options(selectinload(user_model.User.groups)).filter(user_model.User.id == user_id)
+    )
+    user: Optional[Tuple[user_model.User]] = result.first()
+    
+    print(f"user:{user}")
+    # print(f"user:{user[0].id}")
+    print(user[0].groups)
+    print(vars(user[0].groups[0]))
+    # print(user[0].groups[0].id)
+
+        # check1 user_idの検証。
+        # if user.id != user_id:
+        #     raise HTTPException(status_code=404, detail="User not found")
+        # if not user:
+        #     raise HTTPException(status_code=404, detail="User not found")
+        # ページ番号から取得するグループの先頭インデックスを計算
+        # start_index = (page - 1) * limit
+        # groups = user[0].groups[start_index : start_index + limit]
+    # ユーザーが所属するグループを取得
+    # groups = user[0].groups[start_index : start_index + limit]
+    return {"groups":user[0].groups}
 

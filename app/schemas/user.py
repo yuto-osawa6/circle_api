@@ -44,7 +44,7 @@ class User(UserBase):
     # class Config:
         # orm_mode = True
 
-class User():
-    id: int
+# class User():
+#     id: int
         # title2: str
     # done: int = Field(1, description="完了フラグ")

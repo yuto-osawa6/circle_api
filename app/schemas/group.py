@@ -1,6 +1,6 @@
 from typing import Optional,List
 from pydantic import BaseModel, Field
-# from .user import User
+from .user import User
 
 class GroupBase(BaseModel):
     name: str = Field(None, example="クリーニングを取りに行く")
@@ -14,13 +14,13 @@ class GroupCreate(GroupBase):
     class Config:
         orm_mode = True
 
-# class GroupCreateResponse(GroupCreate):
-#     id: int
-#     level: int = Field(example=1)
-#     name:str
+class GroupCreateResponse(GroupCreate):
+    id: int
+    level: int = Field(example=1)
+    name:str
 
-#     class Config:
-#         orm_mode = True
+    # class Config:
+    #     orm_mode = True
 
 
 class GroupUpdate(GroupBase):
@@ -29,7 +29,18 @@ class GroupUpdate(GroupBase):
 class Group(GroupBase):
     id: int
     level: int
-    users: List["User"] = []
+    # users: List[User]
+
+    class Config:
+        orm_mode = True
+
+class ShowGroup(GroupBase):
+    group: Group
+    users: List[User]
+
+# responce
+class ReadUserGroup(BaseModel):
+    groups: List[Group]
 
     class Config:
         orm_mode = True

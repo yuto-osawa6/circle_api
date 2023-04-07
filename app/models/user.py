@@ -15,7 +15,12 @@ class User(Base):
 
     user_detail = relationship(
         "UserDetail", back_populates="user", uselist=False)
-    groups = relationship("GroupUser", back_populates="user")
+    # groups = relationship("GroupUser", back_populates="user")
+    # groups = relationship("Group", back_populates="user")
+    groups = relationship('Group', secondary="group_users", back_populates='users')
+
+    # 
+    group_users = relationship("GroupUser", back_populates="user")
 
 
 class UserDetail(Base):

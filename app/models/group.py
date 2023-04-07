@@ -11,9 +11,14 @@ class Group(Base):
     name = Column(String(50), index=True, nullable=False)
     level = Column(Integer, nullable=False, default=0)
 
-    users = relationship('GroupUser', back_populates='group')
+    # users = relationship('User', back_populates='group')
+    users = relationship('User', secondary="group_users", back_populates='groups')
+
     # group = relationship("User", secondary="group_user", back_populates="user")
     # detail = relationship('GroupDetail', back_populates='group', uselist=False)
+
+    # 
+    group_users = relationship('GroupUser', back_populates='group')
 
 
 class GroupUser(Base):
@@ -23,7 +28,8 @@ class GroupUser(Base):
     group_id = Column(Integer, ForeignKey("groups.id"), primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
 
-    group = relationship("Group", back_populates="users")
-    user = relationship("User", back_populates="groups")
+    # 
+    group = relationship("Group", back_populates="group_users")
+    user = relationship("User", back_populates="group_users")
 
 # class GroupDetails
