@@ -1,6 +1,6 @@
 from typing import Optional
 from fastapi import FastAPI, Depends
-from app.routers import task,group
+from app.routers import task,group,group_chat
 from app.cruds.user import get_user
 from app.cruds.user import get_or_create_user
 
@@ -14,6 +14,9 @@ from app.db import get_db
 app = FastAPI()
 app.include_router(task.router)
 app.include_router(group.router)
+app.include_router(group_chat.router)
+# app.inclute
+
 
 # app.include_router(done.router)
 
