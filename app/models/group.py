@@ -19,6 +19,8 @@ class Group(Base):
 
     # 
     group_users = relationship('GroupUser', back_populates='group')
+    # 
+    group_chats = relationship('GroupChat', back_populates='group')
 
 
 class GroupUser(Base):

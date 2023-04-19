@@ -12,6 +12,7 @@ SQLAlchemy = "^1.4.39"
 aiomysql = "^0.1.1"
 firebase-admin = "^5.2.0"
 alembic = "^1.9.1"
+redis = "^4.5.4"
 
 [tool.poetry.dev-dependencies]
 

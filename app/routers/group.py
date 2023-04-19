@@ -51,11 +51,11 @@ async def get_group(group_id: int, db: AsyncSession = Depends(get_db)):
 
 @router.get("/users/{user_id}/groups", response_model=group_schema.ReadUserGroup)
 # async def read_groups(user_id: int, db: AsyncSession = Depends(get_db),token = Depends(get_user)):
-async def read_groups(user_id: int, db: AsyncSession = Depends(get_db)):
+async def read_groups(user_id: int,page:int = 1,db: AsyncSession = Depends(get_db)):
 
     # user = await get_user2(db,token)
     # skip = (page - 1) * limit
     # users = await group_crud.get_groups(db, skip=skip, limit=limit)
     # # return {"users": users}
     # return await group_crud.get_user_groups(db,user_id,user,1,30)
-    return await group_crud.get_user_groups(db,user_id,1,30)
+    return await group_crud.get_user_groups(db,user_id,page,20)

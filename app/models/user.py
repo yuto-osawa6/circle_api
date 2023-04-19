@@ -21,6 +21,8 @@ class User(Base):
 
     # 
     group_users = relationship("GroupUser", back_populates="user")
+    # 
+    group_chats = relationship('GroupChat', back_populates='user')
 
 
 class UserDetail(Base):

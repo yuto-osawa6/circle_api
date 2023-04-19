@@ -241,7 +241,7 @@ async def get_group_by_id(db: AsyncSession, group_id: int) -> group_schema.ShowG
 # get group by user
 # async def get_user_groups(db: AsyncSession,user_id:int,user:user_model.User,  page: int = 1,limit: int = 20):
 async def get_user_groups(db: AsyncSession,user_id:int,  page: int = 1,limit: int = 20):
-
+    print(f"page:{page}")
     # ユーザーの存在確認
     # user1 = await db.query(user_model.User).filter(user_model.id == user_id).first_async()
     # async with db.begin():
@@ -256,15 +256,11 @@ async def get_user_groups(db: AsyncSession,user_id:int,  page: int = 1,limit: in
     print(vars(user[0].groups[0]))
     # print(user[0].groups[0].id)
 
-        # check1 user_idの検証。
-        # if user.id != user_id:
-        #     raise HTTPException(status_code=404, detail="User not found")
-        # if not user:
-        #     raise HTTPException(status_code=404, detail="User not found")
-        # ページ番号から取得するグループの先頭インデックスを計算
-        # start_index = (page - 1) * limit
-        # groups = user[0].groups[start_index : start_index + limit]
+    # ページ番号から取得するグループの先頭インデックスを計算
+    start_index = (page - 1) * limit
     # ユーザーが所属するグループを取得
-    # groups = user[0].groups[start_index : start_index + limit]
-    return {"groups":user[0].groups}
+    groups = user[0].groups[start_index : start_index + limit]
+    return {"groups":groups}
+    # return  user[0].groups
+
 

@@ -44,3 +44,9 @@ class ReadUserGroup(BaseModel):
 
     class Config:
         orm_mode = True
+
+class ReadUserGroupList(BaseModel):
+    page: int
+
+    class Config:
+        orm_mode = True
