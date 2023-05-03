@@ -9,6 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import app.cruds.task as task_crud
 import app.cruds.user as user_crud
 from app.db import get_db
+import redis
+# from fastapi.logger import logger as fastapi_logger
+# from fastapi.logger import logger as fastapi_logger
+# from uvicorn import logger as uvicorn_logger
+import logging
 
 
 app = FastAPI()
@@ -17,12 +22,20 @@ app.include_router(group.router)
 app.include_router(group_chat.router)
 # app.inclute
 
+redis_client = redis.Redis(host='redis', port=6379) #docker-container
+
+fastapi_logger = logging.getLogger("fastapi")
+fastapi_logger.setLevel(logging.DEBUG)
+# print(redis_client.ping())
+# print("aaaaa")
 
 # app.include_router(done.router)
 
 @app.get("/")
 def read_root():
     # return {"Hello": "World32"}
+    print(redis_client.ping())
+    print("aaaaa")
     return {"email": "World32","token2": "","afe":"afe"}
 
 # @app.get("/hello")

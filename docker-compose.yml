@@ -13,6 +13,8 @@ services:
     command: --default-authentication-plugin=mysql_native_password  # MySQL8.0ではデフォルトが"caching_sha2_password"で、ドライバが非対応のため変更
     ports:
       - 3306:3306  # ホスト
+    # networks:
+    #   - my_network
   api:
     container_name: "api"
     volumes:
@@ -22,10 +24,19 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8080:8080
+      # - 8000:8000
+    # networks:
+    #   - my_network
   redis:
+    container_name: "redis"
     image: redis
     ports:
-      - 6379:6379
+      # - "127.0.0.1:6379:6379"
+      - "6379:6379"
+    # networks:
+    #   - my_network
+# networks:
+#   my_network:
 volumes:
   mysql_data:
     # driver: local
