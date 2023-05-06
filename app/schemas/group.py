@@ -2,6 +2,8 @@ from typing import Optional,List
 from pydantic import BaseModel, Field
 from .user import User
 
+# check-1 response model で返す場合もormmode true にしてる箇所があるので直す。
+
 class GroupBase(BaseModel):
     name: str = Field(None, example="クリーニングを取りに行く")
 
