@@ -83,7 +83,7 @@ async def websocket_endpoint(websocket: WebSocket,group_id: int,user_id: int, db
     while True:
         message = pubsub.get_message()
         print(message)
-        print("aaa234")
+        # print("aaa234")
         if message and message['type'] == 'message':
             await websocket.send_text(message['data'].decode('utf-8'))
 
