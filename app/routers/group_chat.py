@@ -15,6 +15,7 @@ from app.db import get_db
 
 import app.cruds.group_chat as group_chat_crud
 import app.schemas.group_chat as group_chat_scheme
+import asyncio
 
 # from app.main import app
 
@@ -56,17 +57,7 @@ logging.basicConfig(level=logging.DEBUG)
 async def on_connect(websocket: WebSocket):
     await websocket.accept()
 
-# @router.websocket("/ws")
-# # async def websocket_endpoint(websocket: WebSocket, extra_headers=[('Authorization', f'Bearer {jwt_token}')]):
-# async def websocket_endpoint(websocket: WebSocket):
-#     await websocket.accept()
-#     # print(websocket)
-#     # await websocket.send_text("Hello, server!")
-#     # data = await websocket.receive_text()
-#     data = await websocket.receive_text()
-#     await websocket.send_text(f"{data}")
-#     print(data)
-#     print("aaaaaaa")
+
 
 @router.websocket("/ws/{group_id}/{user_id}")
 # async def websocket_endpoint(websocket: WebSocket, extra_headers=[('Authorization', f'Bearer {jwt_token}')]):
@@ -74,44 +65,40 @@ async def websocket_endpoint(websocket: WebSocket,group_id: int,user_id: int, db
     await websocket.accept()
     pubsub = redis_client.pubsub()
     pubsub.subscribe(f"group_chanel{group_id}")
-    data = await websocket.receive_text()
-    await websocket.send_text(f"{data}")
-    print(data)
+    # data = await websocket.receive_text()
+    # await websocket.send_text(f"{data}")
+    # print(data)
     print("aaaaaaa２8")
     logger.info('WebSocket connection establishedおおお')
-    # try:
-    while True:
-        message = pubsub.get_message()
-        print(message)
-        # print("aaa234")
-        if message and message['type'] == 'message':
-            await websocket.send_text(message['data'].decode('utf-8'))
+    try:
+        while True:
+            message = pubsub.get_message()
+            if message and message['type'] == 'message':
+                await websocket.send_text(message['data'].decode('utf-8'))
 
-        data = await websocket.receive_text()
-        print(data)
+            await asyncio.sleep(0.1)  # 0.1秒待つ
+    finally:
+        # WebSocket接続を閉じる前にRedisのサブスクリプションを解除する
+        pubsub.unsubscribe(f"group_chanel{group_id}")
 
-    # except WebSocketDisconnect:
-    #     pass
 
-    # finally:
-    #     # if pubsub is not None:
-    #     #   await pubsub.unsubscribe()
-    #     #   await pubsub.close()
-    #       print("finallyブロック内の処理完了")
 
-# # メッセージを送信したらRedisのPubSubチャンネルにパブリッシュする
 # @router.post("/groups/{group_id}/group_chats")
-# async def send_message(group_id: str, message: str, user_id: str):
-#     # RedisのPubSubチャンネルにパブリッシュする
-#     channel = f"group_chat_channel_{group_id}"
-#     redis_client.publish(channel, f"{user_id}: {message}")
-
-#     return {"message": "OK"}
-
+# async def create_message(body: group_chat_scheme.GroupChatContentCreate, db: AsyncSession = Depends(get_db)):
+#     print(body)
+#     room = f"group_chanel{body.group_id}"
+#     db_message = await group_chat_crud.create_group_chat_content(db, body)
+#     print(db_message)
+#     print("aaaaa")
+#     # redis_client.publish(room, f"{db_message.id}:{db_message.message}")
+#     return "db_message"
 
 @router.post("/groups/{group_id}/group_chats")
 async def create_message(body: group_chat_scheme.GroupChatContentCreate, db: AsyncSession = Depends(get_db)):
-    room = f"group_chanel{body.group_id}"
-    db_message = await group_chat_crud.create_group_chat_content(db, body)
-    redis_client.publish(room, f"{db_message.id}:{db_message.message}")
-    return db_message
+    # print(body)
+    # room = f"group_chanel{body.group_id}"
+    # db_message = await group_chat_crud.create_group_chat_content(db, body)
+    # print(db_message)
+    # print("aaaaa")
+    # redis_client.publish(room, f"{db_message.id}:{db_message.message}")
+    return await group_chat_crud.create_group_chat_content(db, body)

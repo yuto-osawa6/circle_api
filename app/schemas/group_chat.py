@@ -20,3 +20,9 @@ class GroupChatContentCreate(BaseModel):
     text_content: str = None
     class Config:
         orm_mode = True
+
+class GroupChatContent(BaseModel):
+    group_chat_id: int
+    content_type: str
+    s3_object_key: str = None
+    text_content: str = None

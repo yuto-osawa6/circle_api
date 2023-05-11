@@ -29,7 +29,7 @@ class UserDetail(Base):
     __tablename__ = "user_details"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False,unique=True)
     name = Column(String(1024))
 
     user = relationship("User", back_populates="user_detail")
