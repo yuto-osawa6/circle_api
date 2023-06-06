@@ -4,6 +4,7 @@ from firebase_admin import auth, credentials
 import firebase_admin
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 # import app.models.task as task_model
 # import app.schemas.task as task_schema
 import app.models.user as user_model
@@ -12,6 +13,8 @@ from sqlalchemy.engine import Result
 from typing import List, Tuple, Optional
 import uuid
 import requests
+
+import json
 
 
 # cred = credentials.Certificate('./account_key.json')
@@ -117,13 +120,18 @@ async def get_or_create_user(db: AsyncSession, decoded_token):
                 user_model.User.uid == decoded_token['uid'],
                 user_model.User.email == decoded_token['email']
             )
+            .options(selectinload(user_model.User.groups).load_only('id'))
         )
         user: Optional[Tuple[user_model.User]] = result.first()
 
         # print(user)
-        print(f"user0:{user}")
+        print(f"user0:{vars(user[0])}")
         print(f"user1:{user[0]}")
         print(f"user02:{user[0].email}")
+        print(vars(user[0]))
+        print("aiaia")
+        # user_json = json.dumps(user[0].__dict__)
+        # print(user_json)
 
         # print(user[0] if user is not None else None)
         if user == None:
@@ -145,6 +153,7 @@ async def get_or_create_user(db: AsyncSession, decoded_token):
         print()
         print(f"user:{user}")
         print(user[0])
+        print(vars(user[0]))
         print("aa")
 
         print(user[0] if user is not None else None)

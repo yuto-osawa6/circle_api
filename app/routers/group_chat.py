@@ -72,11 +72,17 @@ async def websocket_endpoint(websocket: WebSocket,group_id: int,user_id: int, db
     logger.info('WebSocket connection establishedおおお')
     try:
         while True:
+            # logger.info("kokojoioijoiっっっっっっっkじょおいじおじょいじおじょいじょ")
             message = pubsub.get_message()
+            # logger.info(message)
+            # logger.info(message['data'].decode('utf-8'))
             if message and message['type'] == 'message':
                 await websocket.send_text(message['data'].decode('utf-8'))
 
             await asyncio.sleep(0.1)  # 0.1秒待つ
+    except AttributeError:
+        print("Error: message data is not a byte string")
+        logger.info('WebSocket connection establishedおおお22')
     finally:
         # WebSocket接続を閉じる前にRedisのサブスクリプションを解除する
         pubsub.unsubscribe(f"group_chanel{group_id}")
@@ -102,3 +108,17 @@ async def create_message(body: group_chat_scheme.GroupChatContentCreate, db: Asy
     # print("aaaaa")
     # redis_client.publish(room, f"{db_message.id}:{db_message.message}")
     return await group_chat_crud.create_group_chat_content(db, body)
+
+@router.get("/groups/{group_id}/group_chats")
+async def read_group_chats(
+    group_id: int, page:int = 1, db:  AsyncSession = Depends(get_db)
+):
+    # query = (
+    #     db.query(GroupChat)
+    #     .join(GroupChatContent)
+    #     .filter(GroupChat.group_id == group_id)
+    #     .offset(skip)
+    #     .limit(limit)
+    #     .all()
+    # )
+    return  await group_chat_crud.get_group_chats(db,group_id,page,10)

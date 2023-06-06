@@ -19,6 +19,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.engine import Result
 
+import time
+
 # async def create_group(db: AsyncSession,group_create: group_schema.GroupCreate,token):
 #     # user = await get_user2(db,token)
 #     print(token)
@@ -241,26 +243,23 @@ async def get_group_by_id(db: AsyncSession, group_id: int) -> group_schema.ShowG
 # get group by user
 # async def get_user_groups(db: AsyncSession,user_id:int,user:user_model.User,  page: int = 1,limit: int = 20):
 async def get_user_groups(db: AsyncSession,user_id:int,  page: int = 1,limit: int = 20):
-    print(f"page:{page}")
-    # ユーザーの存在確認
-    # user1 = await db.query(user_model.User).filter(user_model.id == user_id).first_async()
-    # async with db.begin():
-    result: Result = await db.execute(
-        select(user_model.User).options(selectinload(user_model.User.groups)).filter(user_model.User.id == user_id)
+    start_time = time.time()
+    # result = await db.execute(
+    #     select(user_model.User).options(selectinload(user_model.User.groups)).filter(user_model.User.id == user_id)
+    # )
+    # user = result.scalar()
+    # groups = user.groups[(page-1)*limit:page*limit]
+    # return {"groups": groups}  
+    result = await db.execute(
+        select(group_model.Group)
+        .join(group_model.Group.users)
+        .filter(user_model.User.id == user_id)
+        .limit(limit)
+        .offset((page - 1) * limit)
     )
-    user: Optional[Tuple[user_model.User]] = result.first()
-    
-    print(f"user:{user}")
-    # print(f"user:{user[0].id}")
-    print(user[0].groups)
-    print(vars(user[0].groups[0]))
-    # print(user[0].groups[0].id)
-
-    # ページ番号から取得するグループの先頭インデックスを計算
-    start_index = (page - 1) * limit
-    # ユーザーが所属するグループを取得
-    groups = user[0].groups[start_index : start_index + limit]
-    return {"groups":groups}
-    # return  user[0].groups
+    groups = result.scalars().all()
+    elapsed_time = time.time() - start_time
+    print(f"elapsed_time: {elapsed_time}")
+    return {"groups": groups}
 
 
