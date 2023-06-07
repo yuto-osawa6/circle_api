@@ -120,12 +120,12 @@ async def get_or_create_user(db: AsyncSession, decoded_token):
                 user_model.User.uid == decoded_token['uid'],
                 user_model.User.email == decoded_token['email']
             )
-            .options(selectinload(user_model.User.groups).load_only('id'))
+            # .options(selectinload(user_model.User.groups))
         )
         user: Optional[Tuple[user_model.User]] = result.first()
 
         # print(user)
-        print(f"user0:{vars(user[0])}")
+        # print(f"user0:{vars(user[0].groups)}")
         print(f"user1:{user[0]}")
         print(f"user02:{user[0].email}")
         print(vars(user[0]))
