@@ -12,6 +12,7 @@ class User(Base):
     cid = Column(String(768), unique=True, nullable=False, index=True)
     first_time = Column(Boolean, nullable=False, default=False)
     # dfd = Column(String(768), unique=True, nullable=False, index=True)
+    device_token = Column(String(768), unique=True, nullable=False)
 
     user_detail = relationship(
         "UserDetail", back_populates="user", uselist=False)

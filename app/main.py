@@ -1,6 +1,6 @@
 from typing import Optional
-from fastapi import FastAPI, Depends
-from app.routers import task,group,group_chat
+from fastapi import FastAPI, Depends, Header
+from app.routers import task,group,group_chat,user
 from app.cruds.user import get_user
 from app.cruds.user import get_or_create_user
 
@@ -20,6 +20,8 @@ app = FastAPI()
 app.include_router(task.router)
 app.include_router(group.router)
 app.include_router(group_chat.router)
+app.include_router(user.router)
+
 # app.inclute
 
 redis_client = redis.Redis(host='redis', port=6379) #docker-container
@@ -71,9 +73,11 @@ def read_item(item_id: int, q: Optional[str] = None):
 #     return await user_crud.get_or_create_user(db)
 
 @app.get("/api/me")
-async def list_tasks(db: AsyncSession = Depends(get_db),user = Depends(get_user)):
+async def list_tasks(db: AsyncSession = Depends(get_db),user = Depends(get_user),device_token: str = Header(...)):
     print(user)
-    return await user_crud.get_or_create_user(db,user)
+    print(f"device:{device_token}")
+    print(f"aaaaafefefae")
+    return await user_crud.get_or_create_user(db,user,device_token)
     # get_or_create_user
     # return {"msg":"Hello, user","uid":user['uid']} 
 

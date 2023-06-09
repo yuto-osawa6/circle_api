@@ -101,7 +101,7 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBea
 #     return user
 
 
-async def get_or_create_user(db: AsyncSession, decoded_token):
+async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str):
     print(decoded_token)
     print("print(decoded_token)")
     # if cred is None:
@@ -140,13 +140,19 @@ async def get_or_create_user(db: AsyncSession, decoded_token):
             user = user_model.User(
                 uid=decoded_token['uid'],
                 email=decoded_token['email'],
-                cid=str(uuid.uuid4())
+                cid=str(uuid.uuid4()),
+                device_token=device_token  # デバイストークンを設定
             )
             db.add(user)
             await db.commit()
             await db.refresh(user)
             return user
-        pass
+        else:
+            # ユーザーが既に存在する場合はデバイストークンを更新
+            if user[0].device_token != device_token:
+                user[0].device_token = device_token
+                await db.commit()
+                await db.refresh(user[0])
 
         print("user:")
         # print(vars(user[0]))
@@ -237,3 +243,25 @@ async def get_user2(db: AsyncSession, decoded_token):
 #         return user_schema.User(uid=decoded_token['uid'], email=decoded_token['email'])
 #     except Exception as e:
 #         raise HTTPException(status_code=500, detail='Server Error')
+
+
+
+async def update_fcm_token_crud(db:AsyncSession,user_id:int,device_token: str):
+    try:
+        # # ユーザーを探す
+        user = await db.execute(select(user_model.User).filter(user_model.User.id == user_id))
+        user = user.scalar()
+        print(user.device_token)
+
+        # ユーザーが存在する場合にデバイストークンを更新
+        if user:
+            user.device_token = device_token
+            await db.commit()
+            await db.refresh(user)
+            return {"status": "Device token updated successfully"}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail='Server Error')
+    
+    # ユーザーが存在しない場合や処理が実行されなかった場合はエラーを返す
+    raise HTTPException(status_code=404, detail='User not found')
