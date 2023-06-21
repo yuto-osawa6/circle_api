@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.cruds.task as task_crud
 import app.cruds.user as user_crud
+# scheme
+import app.schemas.user_group  as user_group_scheme
 from app.db import get_db
 import redis
 # from fastapi.logger import logger as fastapi_logger
@@ -72,7 +74,7 @@ def read_item(item_id: int, q: Optional[str] = None):
 # async def list_tasks(db: AsyncSession = Depends(get_db)):
 #     return await user_crud.get_or_create_user(db)
 
-@app.get("/api/me")
+@app.get("/api/me",response_model = user_group_scheme.User2)
 async def list_tasks(db: AsyncSession = Depends(get_db),user = Depends(get_user),device_token: str = Header(...)):
     print(user)
     print(f"device:{device_token}")

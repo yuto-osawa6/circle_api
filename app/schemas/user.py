@@ -1,5 +1,9 @@
 from typing import Optional
 from pydantic import BaseModel, Field
+from typing import List
+# import app.models.group as Group
+# from app.schemas.group import GroupUserBase
+# import app.schemas.group as group_scheme
 
 
 # class Task(BaseModel):
@@ -36,15 +40,18 @@ class UserCreateResponse(UserCreate):
 class User(UserBase):
     id: int
 
-    # class Config:
-    #     orm_mode = True
-    # title2: str
-    # done: int = Field(1, description="完了フラグ")
+# 追記2
 
-    # class Config:
-        # orm_mode = True
+# class UserBase2(BaseModel):
+#     uid: str
+#     email: str
+#     cid: str
+#     device_token: str
 
-# class User():
+# class User2(UserBase2):
 #     id: int
-        # title2: str
-    # done: int = Field(1, description="完了フラグ")
+#     first_time: bool
+#     groups: List[group_scheme.GroupUserBase]  # ユーザーが所属するグループのリスト
+
+#     class Config:
+#         orm_mode = True

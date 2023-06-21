@@ -57,21 +57,6 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
 
         room = f"group_chanel{group_chat.group_id}"
         print(f"rooooooooom{group_chat_content}")
-        # redis_client.publish(
-        #     room, f"{group_chat_content.id}:{ group_chat_content.text_content}")
-        # redis_client.publish(room, json.dumps({"id": group_chat_content.id, "text_content": group_chat_content.text_content}))
-        # redis_client.publish(room, json.dumps({
-        #     "id": group_chat.id,
-        #     "group_id": group_chat.group_id,
-        #     "user_id": group_chat.user_id,
-        #     "content": {
-        #         "group_chat_id": group_chat_content.group_chat_id,
-        #         "content_type": group_chat_content.content_type,
-        #         "text_content": group_chat_content.text_content,
-        #         "s3_object_key": group_chat_content.s3_object_key,
-        #         "id": group_chat_content.id
-        #     }
-        # }))
         redis_client.publish(room, json.dumps({
         "id": group_chat.id,
         "group_id": group_chat.group_id,

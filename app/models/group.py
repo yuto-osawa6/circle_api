@@ -13,7 +13,9 @@ class Group(Base):
     name = Column(String(50), index=True, nullable=False)
     level = Column(Integer, nullable=False, default=0)
 
-    users = relationship('User', secondary="group_users", back_populates='groups', overlaps='group_users')
+    # users = relationship('User', secondary="group_users", back_populates='groups', overlaps='group_users')
+    users = relationship('User', secondary="group_users", back_populates='groups', overlaps='group_users', lazy='selectin')
+
     # users = relationship('User', secondary="group_users")
 
 

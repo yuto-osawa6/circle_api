@@ -1,6 +1,7 @@
 from typing import Optional,List
 from pydantic import BaseModel, Field
 from .user import User
+# import app.schemas.user as user_scheme
 
 # check-1 response model で返す場合もormmode true にしてる箇所があるので直す。
 
@@ -52,3 +53,11 @@ class ReadUserGroupList(BaseModel):
 
     class Config:
         orm_mode = True
+
+# 追記
+# class GroupUserBase(BaseModel):
+#     id: int
+#     name: str
+#     level: int
+#     users: List[user_scheme.User2]  # グループに所属するユーザーのリスト
+    

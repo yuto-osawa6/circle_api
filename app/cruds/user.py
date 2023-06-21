@@ -4,10 +4,12 @@ from firebase_admin import auth, credentials
 import firebase_admin
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload,subqueryload
+from fastapi.encoders import jsonable_encoder
 # import app.models.task as task_model
 # import app.schemas.task as task_schema
 import app.models.user as user_model
+import app.models.group as group_model
 import app.schemas.user as user_schema
 from sqlalchemy.engine import Result
 from typing import List, Tuple, Optional
@@ -103,33 +105,31 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBea
 
 async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str):
     print(decoded_token)
-    print("print(decoded_token)")
-    # if cred is None:
-    #     raise HTTPException(
-    #         status_code=status.HTTP_401_UNAUTHORIZED,
-    #         detail="Bearer authentication required",
-    #         headers={'WWW-Authenticate': 'Bearer realm="auth_required"'},
-    #     )
     try:
-        # print(cred)
-        # print("kkokooo")
-        # decoded_token = auth.verify_id_token(cred.credentials)
-
         result: Result = await db.execute(
             select(user_model.User).filter(
                 user_model.User.uid == decoded_token['uid'],
                 user_model.User.email == decoded_token['email']
             )
             # .options(selectinload(user_model.User.groups))
+            # .options(subqueryload(user_model.User.groups).subqueryload(group_model.Group.users))  # ユーザーが所属するグループとグループに所属するユーザーの情報を一度に取得)
+            .options(selectinload(user_model.User.groups).selectinload(group_model.Group.users))
         )
-        user: Optional[Tuple[user_model.User]] = result.first()
+        # user: Optional[Tuple[user_model.User]] = result.first()
+        user: Optional[user_model.User] = result.scalar_one_or_none()
 
-        # print(user)
-        # print(f"user0:{vars(user[0].groups)}")
-        print(f"user1:{user[0]}")
-        print(f"user02:{user[0].email}")
-        print(vars(user[0]))
-        print("aiaia")
+        print(user)
+        print(f"user0:{vars(user.groups[0])}")
+        print(f"user0:{vars(user.groups[1])}")
+
+        print(f"user0:{vars(user.groups[0].users[0])}")
+        # print(f"user0:{vars(user.groups[0].users[])}")
+
+
+        print(f"user1:{user}")
+        # print(f"user02:{user[0].email}")
+        # print(vars(user[0]))
+        # print("aiaia")
         # user_json = json.dumps(user[0].__dict__)
         # print(user_json)
 
@@ -149,28 +149,29 @@ async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str)
             return user
         else:
             # ユーザーが既に存在する場合はデバイストークンを更新
-            if user[0].device_token != device_token:
-                user[0].device_token = device_token
+            if user.device_token != device_token:
+                user.device_token = device_token
                 await db.commit()
-                await db.refresh(user[0])
+                await db.refresh(user)
 
         print("user:")
         # print(vars(user[0]))
-        print()
-        print(f"user:{user}")
-        print(user[0])
-        print(vars(user[0]))
-        print("aa")
+        # print()
+        # print(f"user:{user}")
+        # print(user[0])
+        # print(vars(user[0]))
+        # print("aa")
 
-        print(user[0] if user is not None else None)
+        # print(user[0] if user is not None else None)
 
-        print(decoded_token['uid'])
-        print(decoded_token['email'])
+        # print(decoded_token['uid'])
+        # print(decoded_token['email'])
 
         print("aefijaeiofjaoifje")
         # return user[0]
     except Exception as err:
         # 通信エラーの場合
+        print("エラーが起きました。milk")
         print(err)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -178,7 +179,9 @@ async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str)
             headers={'WWW-Authenticate': 'Bearer error="invalid_token"'},
         )
     # res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'
-    return user[0]
+    # user_json = json.dumps(user, default=lambda o: o.__dict__)
+    # return user_json
+    return user
 
 
 async def get_user2(db: AsyncSession, decoded_token):
