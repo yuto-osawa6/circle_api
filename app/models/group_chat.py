@@ -1,5 +1,6 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, ForeignKey, Text, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 from app.db import Base
 
@@ -10,6 +11,7 @@ class GroupChat(Base):
     id = Column(Integer, primary_key=True, index=True)
     group_id = Column(Integer, ForeignKey("groups.id"))
     user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.utcnow)  # 作成時の日付を保存するカラム
     # その他のカラム
 
     group = relationship("Group", back_populates="group_chats")

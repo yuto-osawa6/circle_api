@@ -4,7 +4,7 @@ from firebase_admin import auth, credentials
 import firebase_admin
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import selectinload,subqueryload
+from sqlalchemy.orm import selectinload,subqueryload,joinedload
 from fastapi.encoders import jsonable_encoder
 # import app.models.task as task_model
 # import app.schemas.task as task_schema
@@ -106,34 +106,48 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBea
 async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str):
     print(decoded_token)
     try:
-        result: Result = await db.execute(
+        # result: Result = await db.execute(
+        #     select(user_model.User).filter(
+        #         user_model.User.uid == decoded_token['uid'],
+        #         user_model.User.email == decoded_token['email']
+        #     )
+        #     # .options(selectinload(user_model.User.groups))
+        #     # .options(subqueryload(user_model.User.groups).subqueryload(group_model.Group.users))  # ユーザーが所属するグループとグループに所属するユーザーの情報を一度に取得)
+        #     # .options(selectinload(user_model.User.groups).selectinload(group_model.Group.users))
+        #     .options(
+        #         # selectinload(user_model.User.groups)
+        #         # .limit(20)
+        #         # .selectinload(group_model.Group.group_chats)
+        #         # .selectinload(group_model.GroupChat.content),
+        #         # selectinload(user_model.User.groups)
+        #         # .limit(20)
+        #         # .selectinload(group_model.Group.users)
+        #         # joinedload(user_model.User.groups)
+        #         # .joinedload(group_model.Group.group_chats)
+        #         # .joinedload(group_model.GroupChat.content)
+        #         # .subqueryload(group_model.GroupChatContent.group_chat),
+        #         # joinedload(user_model.User.groups).limit(10)
+        #         joinedload(user_model.User.groups).limit(10)
+        #         # .joinedload(group_model.Group.users)
+        #     )
+        # )
+
+        # user: Optional[Tuple[user_model.User]] = result.first()
+        result = await db.execute(
             select(user_model.User).filter(
                 user_model.User.uid == decoded_token['uid'],
                 user_model.User.email == decoded_token['email']
             )
-            # .options(selectinload(user_model.User.groups))
-            # .options(subqueryload(user_model.User.groups).subqueryload(group_model.Group.users))  # ユーザーが所属するグループとグループに所属するユーザーの情報を一度に取得)
-            .options(selectinload(user_model.User.groups).selectinload(group_model.Group.users))
+            # .options(
+            #     joinedload(user_model.User.groups).limit(10)
+            # )
         )
-        # user: Optional[Tuple[user_model.User]] = result.first()
         user: Optional[user_model.User] = result.scalar_one_or_none()
 
-        print(user)
-        print(f"user0:{vars(user.groups[0])}")
-        print(f"user0:{vars(user.groups[1])}")
-
-        print(f"user0:{vars(user.groups[0].users[0])}")
-        # print(f"user0:{vars(user.groups[0].users[])}")
-
-
-        print(f"user1:{user}")
-        # print(f"user02:{user[0].email}")
-        # print(vars(user[0]))
-        # print("aiaia")
-        # user_json = json.dumps(user[0].__dict__)
-        # print(user_json)
-
-        # print(user[0] if user is not None else None)
+        # print(user)
+        # print(f"user0:{vars(user.groups[0])}")
+        # print(f"user0:{vars(user.groups[0].users[0])}")
+        # print(f"user1:{user}")
         if user == None:
             print("No")
             # create
@@ -148,6 +162,10 @@ async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str)
             await db.refresh(user)
             return user
         else:
+            # groupsの数の制限
+            groups_query = select(group_model.Group).join(user_model.User.groups).where(user_model.User.id == user.id).limit(20)
+            groups = await db.execute(groups_query)
+            user.groups = groups.scalars().all()
             # ユーザーが既に存在する場合はデバイストークンを更新
             if user.device_token != device_token:
                 user.device_token = device_token
