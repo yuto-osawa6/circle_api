@@ -20,7 +20,7 @@ import app.models.group_chat as group_chat_model
 import traceback
 
 from typing import List, Tuple, Optional
-from sqlalchemy import select
+from sqlalchemy import select,desc
 from sqlalchemy.orm import selectinload,joinedload
 from sqlalchemy.engine import Result
 
@@ -87,7 +87,11 @@ async def get_group_chats(db: AsyncSession, group_id: int,  page: int = 1, limit
     # async with db.begin():
     result: Result = await db.execute(
         select(group_chat_model.GroupChat).options(joinedload(
-            group_chat_model.GroupChat.content)).filter(group_chat_model.GroupChat.group_id == group_id).offset((page - 1) * limit).limit(limit)
+            group_chat_model.GroupChat.content))
+            .filter(group_chat_model.GroupChat.group_id == group_id)
+            .order_by(desc(group_chat_model.GroupChat.created_at))
+            .offset((page - 1) * limit)
+            .limit(limit)
     )
     print(result)
     group_chat: List[group_chat_model.GroupChat] = result.scalars().all()
