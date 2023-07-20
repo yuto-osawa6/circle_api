@@ -132,13 +132,17 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
         # print(users.id)
             # print(users)
         for user in users:
-            print(user)
-            print(vars(user))
-            print(user.device_token)
-            await send_fcm_notification(user.device_token, 
-                "新しいメッセージが届きました",
-                "新しいメッセージがあります。チャットを確認してください。"
-            )
+            try:
+                print(user)
+                print(vars(user))
+                print(user.device_token)
+                await send_fcm_notification(user.device_token, 
+                    "新しいメッセージが届きました",
+                    "新しいメッセージがあります。チャットを確認してください。"
+                )
+            except Exception as e:
+                print(f"Error sending FCM notification for user {user.id}: {e}")
+            continue
         # users = await users_task
         # print(users.all())
         print("users!!グループに属するユーザー情報")
@@ -155,7 +159,7 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
 
 
 # get group by user
-async def get_group_chats(db: AsyncSession, group_id: int,  page: int = 1, limit: int = 10):
+async def get_group_chats(db: AsyncSession, group_id: int,  page: int = 1, limit: int = 30):
     print(f"page:{page}")
     print(f"limit{limit}")
     # ユーザーの存在確認

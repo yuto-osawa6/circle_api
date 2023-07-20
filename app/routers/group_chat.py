@@ -121,4 +121,4 @@ async def read_group_chats(
     #     .limit(limit)
     #     .all()
     # )
-    return  await group_chat_crud.get_group_chats(db,group_id,page,10)
+    return  await group_chat_crud.get_group_chats(db,group_id,page)
