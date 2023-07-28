@@ -203,6 +203,7 @@ async def create_group3(db: AsyncSession, group_create: group_schema.GroupCreate
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
 async def create_group4(db: AsyncSession, group_create: group_schema.GroupCreate,user):
+# async def create_group4(db: AsyncSession, group_create: group_schema.GroupCreate):
     if not group_create.name:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail='Group name is required')
@@ -219,6 +220,7 @@ async def create_group4(db: AsyncSession, group_create: group_schema.GroupCreate
 
         db_group_user = group_model.GroupUser(
             group=group, user_id=user.id, authority=0)
+            # group=group, user_id=10, authority=0)
         db.add(db_group_user)
         await db.commit()
         await db.refresh(group)

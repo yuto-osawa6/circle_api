@@ -39,10 +39,29 @@ redis_client = redis.Redis(host='redis', port=6379)
 
 async def send_fcm_notification(device_token, title, body):
     print(title,device_token,body)
+    # APNs用のpayloadを設定
+    # apns_payload = messaging.APNSPayload(
+    #     aps=messaging.Aps(
+    #         sound="default", # サウンド設定
+    #         content_available=True, # onBackgroundMessage()を発火させるために必要
+    #     )
+    # )
+    apns = messaging.APNSConfig(
+    payload = messaging.APNSPayload(
+    aps = messaging.Aps( content_available = True ) #　ここがバックグランド通知に必要な部分
+   )
+)
     # FCM通知メッセージの作成
     message = messaging.Message(
         notification=messaging.Notification(title=title, body=body),
+        data={
+            "content_available": "true",
+            "title": title,
+            "body": body
+        },
         token=device_token,
+        # apns=messaging.APNSConfig(payload=apns_payload) # APNs用のpayloadを設定
+        apns = apns
     )
 
     # FCM通知の送信
@@ -81,7 +100,7 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
             # # users = users_result.all()
             # users = [user[0] for user in users_result.all()]
 
-            
+            print("afefe")
             # # ユーザーデータの遅延ロード
             # users = await load_users(db, content.group_id)
             # print(users)

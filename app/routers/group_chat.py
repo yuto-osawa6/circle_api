@@ -2,7 +2,7 @@
 import redis
 import logging
 # from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, APIRouter,Query
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, APIRouter,Query, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.status import HTTP_403_FORBIDDEN
 # logger = logging.getLogger(__name__)
@@ -101,13 +101,21 @@ async def websocket_endpoint(websocket: WebSocket,group_id: int,user_id: int, db
 
 @router.post("/groups/{group_id}/group_chats")
 async def create_message(body: group_chat_scheme.GroupChatContentCreate, db: AsyncSession = Depends(get_db)):
-    # print(body)
-    # room = f"group_chanel{body.group_id}"
-    # db_message = await group_chat_crud.create_group_chat_content(db, body)
-    # print(db_message)
-    # print("aaaaa")
-    # redis_client.publish(room, f"{db_message.id}:{db_message.message}")
-    return await group_chat_crud.create_group_chat_content(db, body)
+    print("afefae22")
+    # return await group_chat_crud.create_group_chat_content(db, body)
+    try:
+    # create_group_chat_contentの呼び出しを行う部分
+        result = await group_chat_crud.create_group_chat_content(db, body)
+        return result
+    except Exception as e:
+        print(f"Error in create_message: {e}")
+        raise
+# @router.post("/groups/{group_id}/group_chats")
+# async def create_message(group_id: int, user_id: int, request: Request):
+#     body = await request.json()
+#     print("Request Body:", body)
+#     # ここでcreate_group_chat_contentの呼び出しを行うなどの処理を行う
+#     return {"status": "success"}
 
 @router.get("/groups/{group_id}/group_chats")
 async def read_group_chats(
