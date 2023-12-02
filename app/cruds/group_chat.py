@@ -15,6 +15,7 @@ import app.models.group as group_model
 import app.models.user as user_model
 
 import app.models.group_chat as group_chat_model
+import app.cruds.user as user_crud
 
 
 # traceback
@@ -49,23 +50,39 @@ async def send_fcm_notification(device_token, title, body):
     apns = messaging.APNSConfig(
     payload = messaging.APNSPayload(
     aps = messaging.Aps( content_available = True ) #　ここがバックグランド通知に必要な部分
-   )
+    )
 )
     # FCM通知メッセージの作成
-    message = messaging.Message(
-        notification=messaging.Notification(title=title, body=body),
+    # message = messaging.Message(
+    #     # notification=messaging.Notification(title=title, body=body),
+    #     data={
+    #         "content_available": "true",
+    #         "title": title,
+    #         "body": body
+    #     },
+    #     token=device_token,
+    #     apns = apns
+    # )
+    # print(message)
+    # 通知メッセージの作成
+    notification = messaging.Notification(
+        title=title,
+        body=body
+    )
+
+    # データメッセージの作成
+    data_message = messaging.Message(
+        notification=notification,
         data={
-            "content_available": "true",
+            # "content_available": "true",
             "title": title,
             "body": body
         },
-        token=device_token,
-        # apns=messaging.APNSConfig(payload=apns_payload) # APNs用のpayloadを設定
-        apns = apns
+        token=device_token
     )
-
+    response = messaging.send(data_message)
     # FCM通知の送信
-    response = messaging.send(message)
+    # response = messaging.send(message)
     print('FCM Notification sent successfully:', response)
 
 async def load_users(db: AsyncSession, group_id: int) -> List[user_model.User]:
@@ -152,6 +169,29 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
             # print(users)
         for user in users:
             try:
+                if content.user_id == user.id:
+                    # content.user_id == user.idのときスキップ　つまりチャットを送った人ならスキップ check1 未確認。
+                    continue
+                print(user.id)
+                print(f"データー！{user.id}")
+                # フォアグランド、個人チャンネルへプッシュ
+                data = {
+                    "id": user.id,
+                    "name": "おためし"
+                    # "group_id": group_chat.group_id,
+                    # "user_id": group_chat.user_id,
+                    # "content": {
+                    #     "group_chat_id": group_chat_content.group_chat_id,
+                    #     "content_type": group_chat_content.content_type,
+                    #     "text_content": group_chat_content.text_content,
+                    #     "s3_object_key": group_chat_content.s3_object_key,
+                    #     "id": group_chat_content.id
+                    }
+                # userチャンネルにパブリッシュ
+                room = f"user_chanel{user.id}"
+                user_crud.publish_to_redis_for_user(room,data)
+
+                # FCM 
                 print(user)
                 print(vars(user))
                 print(user.device_token)
@@ -159,6 +199,7 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
                     "新しいメッセージが届きました",
                     "新しいメッセージがあります。チャットを確認してください。"
                 )
+            
             except Exception as e:
                 print(f"Error sending FCM notification for user {user.id}: {e}")
             continue
@@ -208,3 +249,5 @@ async def get_group_chats(db: AsyncSession, group_id: int,  page: int = 1, limit
     # # ユーザーが所属するグループを取得
     # groups = user[0].groups[start_index : start_index + limit]
     # return {"groups":groups}
+
+

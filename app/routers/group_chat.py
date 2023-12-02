@@ -17,6 +17,8 @@ import app.cruds.group_chat as group_chat_crud
 import app.schemas.group_chat as group_chat_scheme
 import asyncio
 
+# import app.cruds.user as user_crud
+
 # from app.main import app
 
 
@@ -59,7 +61,7 @@ async def on_connect(websocket: WebSocket):
 
 
 
-@router.websocket("/ws/{group_id}/{user_id}")
+@router.websocket("/ws/groups/{group_id}/{user_id}")
 # async def websocket_endpoint(websocket: WebSocket, extra_headers=[('Authorization', f'Bearer {jwt_token}')]):
 async def websocket_endpoint(websocket: WebSocket,group_id: int,user_id: int, db: AsyncSession = Depends(get_db)):
     await websocket.accept()

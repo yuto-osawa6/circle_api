@@ -17,12 +17,14 @@ import uuid
 import requests
 
 import json
-
+import redis
 
 # cred = credentials.Certificate('./account_key.json')
 # app/account_key.json
 cred = credentials.Certificate('./app/account_key.json')
 firebase_admin.initialize_app(cred)
+
+redis_client = redis.Redis(host='redis', port=6379)
 
 
 def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))):
@@ -286,3 +288,8 @@ async def update_fcm_token_crud(db:AsyncSession,user_id:int,device_token: str):
     
     # ユーザーが存在しない場合や処理が実行されなかった場合はエラーを返す
     raise HTTPException(status_code=404, detail='User not found')
+
+
+# user チャンネルにパブリッシュする関数
+def publish_to_redis_for_user(channel, data):
+    redis_client.publish(channel, json.dumps(data))
