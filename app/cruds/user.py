@@ -164,10 +164,12 @@ async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str)
             await db.refresh(user)
             return user
         else:
-            # groupsの数の制限
+            # groupsの数の制限取得
             groups_query = select(group_model.Group).join(user_model.User.groups).where(user_model.User.id == user.id).limit(20)
             groups = await db.execute(groups_query)
             user.groups = groups.scalars().all()
+            # 新規メッセージの取得
+            
             # ユーザーが既に存在する場合はデバイストークンを更新
             if user.device_token != device_token:
                 user.device_token = device_token

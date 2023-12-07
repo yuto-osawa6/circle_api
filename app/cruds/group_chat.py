@@ -177,16 +177,18 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
                 # フォアグランド、個人チャンネルへプッシュ
                 data = {
                     "id": user.id,
-                    "name": "おためし"
-                    # "group_id": group_chat.group_id,
+                    "name": "おためし",
+                    "group_id": group_chat.group_id,
+                    "user_id": group_chat.user_id,
                     # "user_id": group_chat.user_id,
-                    # "content": {
-                    #     "group_chat_id": group_chat_content.group_chat_id,
-                    #     "content_type": group_chat_content.content_type,
-                    #     "text_content": group_chat_content.text_content,
-                    #     "s3_object_key": group_chat_content.s3_object_key,
-                    #     "id": group_chat_content.id
+                    "content": {
+                        "group_chat_id": group_chat_content.group_chat_id,
+                        "content_type": group_chat_content.content_type,
+                        "text_content": group_chat_content.text_content,
+                        "s3_object_key": group_chat_content.s3_object_key,
+                        "id": group_chat_content.id
                     }
+                }
                 # userチャンネルにパブリッシュ
                 room = f"user_chanel{user.id}"
                 user_crud.publish_to_redis_for_user(room,data)
