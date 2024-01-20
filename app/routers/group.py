@@ -35,7 +35,7 @@ async def create_group(body: group_schema.GroupCreate,db: AsyncSession = Depends
 async def get_group(group_id: int, db: AsyncSession = Depends(get_db)):
     return await group_crud.get_group_by_id(db,group_id)
 
-@router.get("/users/{user_id}/groups", response_model=group_schema.ReadUserGroup)
+@router.get("/users/{user_id}/groups")
 # async def read_groups(user_id: int, db: AsyncSession = Depends(get_db),token = Depends(get_user)):
 async def read_groups(user_id: int,page:int = 1,db: AsyncSession = Depends(get_db)):
 

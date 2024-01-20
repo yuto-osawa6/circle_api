@@ -2,6 +2,7 @@ from typing import Optional
 import asyncio
 from fastapi import FastAPI, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import func, desc
 from app.db import get_db
 from app.cruds.user import get_user2
 
@@ -23,7 +24,7 @@ import traceback
 
 from typing import List, Tuple, Optional
 from sqlalchemy import select,desc
-from sqlalchemy.orm import selectinload,joinedload
+from sqlalchemy.orm import selectinload,joinedload,subqueryload
 from sqlalchemy.engine import Result
 
 import redis
@@ -123,7 +124,10 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
             # print(users)
             # print("users")
             # print(users[0].id)
-
+            group_query = select(group_model.Group).filter(group_model.Group.id == content.group_id)
+            result_group = await db.execute(group_query)
+            group = result_group.scalars().first()
+            print(group)
             # ユーザーデータの遅延ロード
             # await asyncio.gather(*[db.refresh(user) for user in users])
 
@@ -209,8 +213,8 @@ async def create_group_chat_content(db: AsyncSession, content: group_chat_schema
         # print(users.all())
         print("users!!グループに属するユーザー情報")
 
-
-        return "message 1"
+        return group,group_chat
+        # return "message 1"
     except Exception as e:
         print(e)
         print("jaijfeioajioea")
@@ -253,3 +257,74 @@ async def get_group_chats(db: AsyncSession, group_id: int,  page: int = 1, limit
     # return {"groups":groups}
 
 
+
+
+# async def get_groups_with_latest_chat(db: AsyncSession, user_id: int):
+#     # サブクエリを使って各グループごとの最新のチャットの日付を取得
+#     latest_chats_subquery = (
+#         select(
+#             group_chat_model.GroupChat.group_id,
+#             func.max(group_chat_model.GroupChat.created_at).label("latest_chat_date")
+#         )
+#         .group_by(group_chat_model.GroupChat.group_id)
+#         .alias("latest_chats")
+#     )
+
+#     # グループと最新のチャットの日付を取得するクエリ
+#     result = await db.execute(
+#         select(group_model.Group, latest_chats_subquery.c.latest_chat_date)
+#         .join(latest_chats_subquery, group_model.Group.id == latest_chats_subquery.c.group_id)
+#         .options(joinedload(group_model.Group.group_chats).joinedload(group_chat_model.GroupChat.content))
+#         .filter(group_model.Group.users.any(user_model.User.id == user_id))
+#         .order_by(desc(latest_chats_subquery.c.latest_chat_date))
+#     )
+
+#     # 結果を取得
+#     groups_with_latest_chat = result.all()
+#     return groups_with_latest_chat
+
+
+async def get_groups_with_latest_chat(db: AsyncSession,user_id):
+    # async with db.begin():
+    result_group = await db.execute(
+        select(group_model.Group, func.max(group_chat_model.GroupChat.created_at).label("latest_chat_date"))
+        .join(group_chat_model.GroupChat)
+        .join(group_model.GroupUser)
+        .filter(group_model.GroupUser.user_id == user_id)
+        .group_by(group_model.Group.id)
+        .order_by(desc("latest_chat_date"))
+        .limit(10)
+    )
+    result_group_chat = await db.execute(
+        select(group_chat_model.GroupChat)
+        .join(group_model.Group)
+        .order_by(desc(group_chat_model.GroupChat.created_at))
+        .limit(20)
+    )
+    # groups_with_latest_chat = await result.scalars().all()
+    groups_with_latest_chat = result_group.scalars().all()
+    group_chats = result_group_chat.scalars().all()
+
+    print(groups_with_latest_chat)
+    print(group_chats)
+    # groups_with_latest_chat.group_chats = group_chats
+    # print(groups_with_latest_chat)
+    # result = await db.execute(
+    #     select(group_model.Group, func.max(group_chat_model.GroupChat.created_at).label("latest_chat_date"))
+    #     .join(group_chat_model.GroupChat)
+    #     .join(group_model.GroupUser)  # user_group_model.UserGroupによりユーザーとグループを結合
+    #     .filter(group_model.GroupUser.user_id == user_id)  # 特定のユーザーに絞り込み
+    #     .group_by(group_model.Group.id, group_chat_model.GroupChat.created_at)  # 追加: created_atをGROUP BYに含める
+    #     .order_by(desc("latest_chat_date"))
+    #     .options(
+    #         joinedload(group_model.Group.group_chats)
+    #         .joinedload(group_chat_model.GroupChat.content)
+    #         .order_by(desc(group_chat_model.GroupChat.created_at))
+    #         .limit(20)
+    #         )  # Order group_chats within each group
+    #     .limit(10)  #
+    # )
+    for group in groups_with_latest_chat:
+        print(group)
+
+    return groups_with_latest_chat,group_chats

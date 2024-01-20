@@ -26,3 +26,33 @@ class GroupChatContent(BaseModel):
     content_type: str
     s3_object_key: str = None
     text_content: str = None
+
+class GroupChat(BaseModel):
+    id:int
+    group_id: int
+    user_id: int
+    content_type: str
+    s3_object_key: str = None
+    text_content: str = None
+
+class GroupChatContent2(GroupChat):
+    id:int
+    group_chat_id: int
+    content_type: str
+    s3_object_key: str = None
+    text_content: str = None
+
+
+# class GroupWithLatestChat(BaseModel):
+#     group_id: int
+#     # 他に必要なフィールドがあれば追加
+
+# class GroupChat(BaseModel):
+#     id: int
+#     group_id: int
+#     user_id: int
+#     created_at: datetime 
+
+# class LatestChatListsResponse(BaseModel):
+#     groups: List[GroupWithLatestChat]
+#     group_chats: List[GroupChat]

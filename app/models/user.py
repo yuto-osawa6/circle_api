@@ -24,8 +24,8 @@ class User(Base):
 
     # 
     group_users = relationship("GroupUser", back_populates="user", overlaps='groups,users')
-    # 
-    group_chats = relationship('GroupChat', back_populates='user')
+    # check1 overlap書いてない　(overlaps='users,groups') 入れといた　エラー確認してない。
+    group_chats = relationship('GroupChat', back_populates='user',overlaps='users,groups')
 
 
 class UserDetail(Base):

@@ -1,7 +1,12 @@
-from typing import Optional,List
-from pydantic import BaseModel, Field
+from typing import Optional,List,Dict
+from pydantic import BaseModel, Field,constr
 from .user import User
+from .tag import TagBase,TagCreateBase
+from .group_chat import GroupChatContent2
+# import app.models.tag as TagModel
 # import app.schemas.user as user_scheme
+import app.schemas.tag as tag_scheme
+
 
 # check-1 response model で返す場合もormmode true にしてる箇所があるので直す。
 
@@ -11,6 +16,8 @@ class GroupBase(BaseModel):
 class GroupCreate(GroupBase):
     level: int = Field(example=1)
     name:str
+    description: constr(max_length=300)
+    tags: List[TagCreateBase]
 
     # users: List[int] = Field(example=[1,2])
 
@@ -20,7 +27,9 @@ class GroupCreate(GroupBase):
 class GroupCreateResponse(GroupCreate):
     id: int
     level: int = Field(example=1)
-    name:str
+    name: str
+    description: Optional[str]
+    tags: List[TagBase]
 
     # class Config:
     #     orm_mode = True
@@ -44,9 +53,9 @@ class ShowGroup(GroupBase):
 # responce
 class ReadUserGroup(BaseModel):
     groups: List[Group]
-
-    class Config:
-        orm_mode = True
+    group_chats:List[GroupChatContent2]
+    # class Config:
+    #     orm_mode = True
 
 class ReadUserGroupList(BaseModel):
     page: int

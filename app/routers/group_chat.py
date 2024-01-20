@@ -107,8 +107,8 @@ async def create_message(body: group_chat_scheme.GroupChatContentCreate, db: Asy
     # return await group_chat_crud.create_group_chat_content(db, body)
     try:
     # create_group_chat_contentの呼び出しを行う部分
-        result = await group_chat_crud.create_group_chat_content(db, body)
-        return result
+        groups,group_chat = await group_chat_crud.create_group_chat_content(db, body)
+        return {"groups":groups,"group_chats":group_chat}
     except Exception as e:
         print(f"Error in create_message: {e}")
         raise
@@ -132,3 +132,24 @@ async def read_group_chats(
     #     .all()
     # )
     return  await group_chat_crud.get_group_chats(db,group_id,page)
+
+
+
+# check 1 ユーザーとのダイレクトメッセージもここに追加したいので、groupだけでなくuserとのチャットも加える。
+# response_modelはあとで
+@router.get("/latest_chat_lists",)
+async def get_groups_with_latest_chat_route(
+    user_id: int,
+    db: AsyncSession = Depends(get_db),
+    # current_user = response_model.
+):
+    groups,group_chat= await group_chat_crud.get_groups_with_latest_chat(db,  user_id)
+    print("groups_with_latest_chat")
+    # print(groups_with_latest_chat)
+    # groups_list = list(groups_with_latest_chat)
+
+    # # リストの長さを表示
+    # print(groups_list)
+    # print(len(groups_list))
+    # print(len(groups_with_latest_chat))
+    return {"groups":groups,"group_chats":group_chat}
