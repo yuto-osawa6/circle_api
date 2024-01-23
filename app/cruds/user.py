@@ -3,13 +3,16 @@ from fastapi import Depends, HTTPException, status, Response
 from firebase_admin import auth, credentials
 import firebase_admin
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select,desc,func
 from sqlalchemy.orm import selectinload,subqueryload,joinedload
+from sqlalchemy.sql import text
 from fastapi.encoders import jsonable_encoder
+
 # import app.models.task as task_model
 # import app.schemas.task as task_schema
 import app.models.user as user_model
 import app.models.group as group_model
+import app.models.group_chat as group_chat_model
 import app.schemas.user as user_schema
 from sqlalchemy.engine import Result
 from typing import List, Tuple, Optional
@@ -28,6 +31,7 @@ redis_client = redis.Redis(host='redis', port=6379)
 
 
 def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBearer(auto_error=False))):
+    print("cred")
     print(cred is None)
     print("cred")
     if cred is None:
@@ -37,13 +41,16 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBea
             headers={'WWW-Authenticate': 'Bearer realm="auth_required"'},
         )
     try:
+        print("cred2")
         print(cred)
         decoded_token = auth.verify_id_token(cred.credentials)
-        # print(decoded_token)
+        print(decoded_token)
+        # print(decoded_token) 
         print("aefijaeiofjaoifje")
         print(decoded_token['uid'])
         print(decoded_token['email'])
     except Exception as err:
+        print(err)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail=f"Invalid authentication credentials. {err}",
@@ -108,48 +115,14 @@ def get_user(res: Response, cred: HTTPAuthorizationCredentials = Depends(HTTPBea
 async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str):
     print(decoded_token)
     try:
-        # result: Result = await db.execute(
-        #     select(user_model.User).filter(
-        #         user_model.User.uid == decoded_token['uid'],
-        #         user_model.User.email == decoded_token['email']
-        #     )
-        #     # .options(selectinload(user_model.User.groups))
-        #     # .options(subqueryload(user_model.User.groups).subqueryload(group_model.Group.users))  # ユーザーが所属するグループとグループに所属するユーザーの情報を一度に取得)
-        #     # .options(selectinload(user_model.User.groups).selectinload(group_model.Group.users))
-        #     .options(
-        #         # selectinload(user_model.User.groups)
-        #         # .limit(20)
-        #         # .selectinload(group_model.Group.group_chats)
-        #         # .selectinload(group_model.GroupChat.content),
-        #         # selectinload(user_model.User.groups)
-        #         # .limit(20)
-        #         # .selectinload(group_model.Group.users)
-        #         # joinedload(user_model.User.groups)
-        #         # .joinedload(group_model.Group.group_chats)
-        #         # .joinedload(group_model.GroupChat.content)
-        #         # .subqueryload(group_model.GroupChatContent.group_chat),
-        #         # joinedload(user_model.User.groups).limit(10)
-        #         joinedload(user_model.User.groups).limit(10)
-        #         # .joinedload(group_model.Group.users)
-        #     )
-        # )
-
-        # user: Optional[Tuple[user_model.User]] = result.first()
         result = await db.execute(
             select(user_model.User).filter(
                 user_model.User.uid == decoded_token['uid'],
                 user_model.User.email == decoded_token['email']
             )
-            # .options(
-            #     joinedload(user_model.User.groups).limit(10)
-            # )
         )
         user: Optional[user_model.User] = result.scalar_one_or_none()
 
-        # print(user)
-        # print(f"user0:{vars(user.groups[0])}")
-        # print(f"user0:{vars(user.groups[0].users[0])}")
-        # print(f"user1:{user}")
         if user == None:
             print("No")
             # create
@@ -165,9 +138,63 @@ async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str)
             return user
         else:
             # groupsの数の制限取得
-            groups_query = select(group_model.Group).join(user_model.User.groups).where(user_model.User.id == user.id).limit(20)
-            groups = await db.execute(groups_query)
-            user.groups = groups.scalars().all()
+            # groups_query2 = select(group_model.Group).limit(20)
+            # groups_query = await db.execute(groups_query2)
+            # user.groups = groups.scalars().all()
+            # グループの取得、最新のチャットがある順に。
+            # groups_query = (
+            #     select(group_model.Group, func.max(group_chat_model.GroupChat.created_at).label("latest_chat_date"))
+            #     # .join(user_model.User)
+            #     .join(group_chat_model.GroupChat, group_model.Group.id == group_chat_model.GroupChat.group_id)
+            #     .join(group_model.GroupUser)
+            #     .filter(group_model.GroupUser.user_id == user.id)
+            #     .group_by(group_model.Group.id)
+            #     .order_by(desc("latest_chat_date"))
+            #     .limit(10)
+            # )
+            groups_query = (
+                select(group_model.Group, func.max(group_chat_model.GroupChat.created_at).label("latest_chat_date"))
+                .join(group_chat_model.GroupChat, group_model.Group.id == group_chat_model.GroupChat.group_id)
+                .join(group_model.GroupUser)
+                .filter(group_model.GroupUser.user_id == user.id)
+                .group_by(group_model.Group.id)
+                .order_by(desc("latest_chat_date"))
+                .limit(10)
+            )
+            result_groups = await db.execute(groups_query)
+            print("Before assigning user.groups:", user.groups)
+            # user.groups = groups_result.scalars().all()
+            # print("After assigning user.groups:", user.groups)
+            # user.groups = result_groups.scalars().all()
+            # print(f"user.groups:{user.groups}")
+            # print(groups)
+            latest_group_ids2 = [group.id for group in result_groups]
+            print(f"latest_group_ids2:{latest_group_ids2}")
+            subquery = (
+                select(
+                    group_chat_model.GroupChat,
+                    func.row_number().over(
+                        partition_by=group_chat_model.GroupChat.group_id,
+                        order_by=text("created_at DESC")
+                    ).label("row_num")
+                )
+                .filter(group_chat_model.GroupChat.group_id.in_(latest_group_ids2))
+                .alias("subquery")
+            )
+            # メインクエリでサブクエリを使用して最新の10件を取得
+            # checkt 10指定
+            chats_query = (
+                select(group_chat_model.GroupChat)
+                .join(subquery, group_chat_model.GroupChat.id == subquery.c.id)
+                # .options(selectinload(group_chat_model.GroupChat.content))
+                .where(subquery.c.row_num <= 10)
+                .order_by(
+                    subquery.c.group_id,
+                    subquery.c.created_at.desc()
+                )
+            )
+            result_chats = await db.execute(chats_query)
+            chats = result_chats.scalars().all()
             # 新規メッセージの取得
             
             # ユーザーが既に存在する場合はデバイストークンを更新
@@ -177,20 +204,7 @@ async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str)
                 await db.refresh(user)
 
         print("user:")
-        # print(vars(user[0]))
-        # print()
-        # print(f"user:{user}")
-        # print(user[0])
-        # print(vars(user[0]))
-        # print("aa")
-
-        # print(user[0] if user is not None else None)
-
-        # print(decoded_token['uid'])
-        # print(decoded_token['email'])
-
         print("aefijaeiofjaoifje")
-        # return user[0]
     except Exception as err:
         # 通信エラーの場合
         print("エラーが起きました。milk")
@@ -200,10 +214,7 @@ async def get_or_create_user(db: AsyncSession, decoded_token, device_token: str)
             detail=f"Invalid authentication credentials. {err}",
             headers={'WWW-Authenticate': 'Bearer error="invalid_token"'},
         )
-    # res.headers['WWW-Authenticate'] = 'Bearer realm="auth_required"'
-    # user_json = json.dumps(user, default=lambda o: o.__dict__)
-    # return user_json
-    return user
+    return user,result_groups,chats
 
 
 async def get_user2(db: AsyncSession, decoded_token):

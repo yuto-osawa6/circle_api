@@ -19,7 +19,7 @@ import app.models.group_chat as group_chat_model
 import traceback
 
 from typing import List, Tuple, Optional
-from sqlalchemy import select,func
+from sqlalchemy import func, select, desc
 from sqlalchemy.orm import selectinload,load_only,joinedload,subqueryload, relationship, contains_eager
 from sqlalchemy.engine import Result
 from sqlalchemy.sql import text
@@ -300,52 +300,36 @@ async def get_user_groups(db: AsyncSession,user_id:int,  page: int = 1,limit: in
     group_ids = [group.id for group in groups]
     print(f"group_ids:{group_ids}")
 
-    # 取得したgroup_idsを元にchatsを取得
+    subquery = (
+    select(
+        group_chat_model.GroupChat,
+        func.row_number().over(
+            partition_by=group_chat_model.GroupChat.group_id,
+            order_by=text("created_at DESC")
+        ).label("row_num")
+    )
+    .filter(group_chat_model.GroupChat.group_id.in_(group_ids))
+    .alias("subquery")
+)
+
+    # メインクエリでサブクエリを使用して最新の10件を取得
+    # checkt 10指定
     chats_query = (
         select(group_chat_model.GroupChat)
+        .join(subquery, group_chat_model.GroupChat.id == subquery.c.id)
         .options(selectinload(group_chat_model.GroupChat.content))
-        .filter(group_chat_model.GroupChat.group_id.in_(group_ids))
-        .order_by(group_chat_model.GroupChat.group_id, group_chat_model.GroupChat.id)
-        .where(
-            func.row_number().over(
-                partition_by=group_chat_model.GroupChat.group_id,
-                order_by=group_chat_model.GroupChat.id
-            ).between(1, 10)
+        .where(subquery.c.row_num <= 10)
+        .order_by(
+            subquery.c.group_id,
+            subquery.c.created_at.desc()
         )
     )
+    
+
     result_chats = await db.execute(chats_query)
     chats = result_chats.scalars().all()
 
-    print(list(chats))
-
-    # print([chats])
-    # return groups
-    # start_time = time.time()
-    # subquery = (
-    #     select(group_chat_model.GroupChat)
-    #     .filter(group_chat_model.GroupChat.group_id == group_model.Group.id)
-    #     .limit(limit)
-    #     .correlate(group_model.Group)
-    #     .alias()
-    # )
-    # result = await db.execute(
-    #     # select(group_model.Group,group_chat_model.GroupChat)
-    #     select(group_model.Group)
-    #     .join(group_model.Group.group_chats)
-    #     .join(group_model.Group.users)
-    #     .join(group_model.Group.tags)
-    #     .outerjoin(subquery)
-    #     # .join(subquery)
-    #     .filter(user_model.User.id == user_id)
-    #     # .options(selectinload(group_model.Group.group_chats))
-    #     # .options(
-    #     #     contains_eager(group_model.Group.group_chats)
-    #     #     .limit(limit)
-    #     # )
-    #     # .select_from(subquery)
-    #     .offset((page - 1) * limit)
-    # )
-    # groups = result.scalars().all()
+    print(f"akmfkds:{chats}")
     print(groups)
     print(f"akmfkds")
     # # ユーザーが所属する各グループに関連するチャットを取得

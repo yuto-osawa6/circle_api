@@ -285,24 +285,42 @@ async def get_group_chats(db: AsyncSession, group_id: int,  page: int = 1, limit
 
 
 async def get_groups_with_latest_chat(db: AsyncSession,user_id):
+    # groups_query = (
+    #     select(group_model.Group, func.max(group_chat_model.GroupChat.created_at).label("latest_chat_date"))
+    #     .join(user_model.User.groups)
+    #     .join(group_chat_model.GroupChat, group_model.Group.id == group_chat_model.GroupChat.group_id)
+    #     .where(user_model.User.id == 10)
+    #     .group_by(group_model.Group.id)
+    #     .order_by(desc("latest_chat_date"))
+    #     .limit(10)
+    # )
+    # groups = await db.execute(groups_query)
+    # print(groups)
+    # latest_group_ids2 = [group.id for group in groups.scalars().all()]
+    # print(f"latest_group_ids2:{latest_group_ids2}")
     # async with db.begin():
     result_group = await db.execute(
         select(group_model.Group, func.max(group_chat_model.GroupChat.created_at).label("latest_chat_date"))
-        .join(group_chat_model.GroupChat)
+        .join(group_chat_model.GroupChat, group_model.Group.id == group_chat_model.GroupChat.group_id)
         .join(group_model.GroupUser)
         .filter(group_model.GroupUser.user_id == user_id)
         .group_by(group_model.Group.id)
         .order_by(desc("latest_chat_date"))
         .limit(10)
     )
+    groups_with_latest_chat = result_group.scalars().all()
+    # 取得したグループIDのリストを作成
+    latest_group_ids = [group.id for group in groups_with_latest_chat]
+    print(f"latest_group_ids:{latest_group_ids}")
+    
+    # check1 .limit(20)をかけてるので、全体に対してlimit(20)が起動する。 グループごとに20件とかにするかも。
     result_group_chat = await db.execute(
         select(group_chat_model.GroupChat)
         .join(group_model.Group)
+        .filter(group_model.Group.id.in_(latest_group_ids))
         .order_by(desc(group_chat_model.GroupChat.created_at))
         .limit(20)
     )
-    # groups_with_latest_chat = await result.scalars().all()
-    groups_with_latest_chat = result_group.scalars().all()
     group_chats = result_group_chat.scalars().all()
 
     print(groups_with_latest_chat)
@@ -324,7 +342,7 @@ async def get_groups_with_latest_chat(db: AsyncSession,user_id):
     #         )  # Order group_chats within each group
     #     .limit(10)  #
     # )
-    for group in groups_with_latest_chat:
-        print(group)
+    # for group in groups_with_latest_chat:
+    #     print(group)
 
     return groups_with_latest_chat,group_chats

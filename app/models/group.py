@@ -15,7 +15,7 @@ class Group(Base):
     level = Column(Integer, nullable=False, default=0)
     description = Column(String(300))
     # 関連
-    users = relationship('User', secondary="group_users", back_populates='groups', overlaps='group_users', lazy='selectin')
+    users = relationship('User', secondary="group_users", back_populates='groups', overlaps='group_users')
     # 
     group_users = relationship('GroupUser', back_populates='group', overlaps='groups,users')
     # 

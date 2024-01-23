@@ -74,12 +74,34 @@ def read_item(item_id: int, q: Optional[str] = None):
 # async def list_tasks(db: AsyncSession = Depends(get_db)):
 #     return await user_crud.get_or_create_user(db)
 
-@app.get("/api/me",response_model = user_group_scheme.User2)
+# @app.get("/api/me",response_model = user_group_scheme.User2)
+@app.get("/api/me")
 async def list_tasks(db: AsyncSession = Depends(get_db),user = Depends(get_user),device_token: str = Header(...)):
-    print(user)
+    # print(user)
     print(f"device:{device_token}")
     print(f"aaaaafefefae")
-    return await user_crud.get_or_create_user(db,user,device_token)
-    # get_or_create_user
-    # return {"msg":"Hello, user","uid":user['uid']} 
+    # a,b=  await user_crud.get_or_create_user(db,user,device_token)
+    # # user_dict = 
+    # # return await user_crud.get_or_create_user(db,user,device_token)
+    # print(f"user.groups2:{a.groups}")
+    # # print(f"user.groups3:{a.dict()}")
+
+
+    # return {"user":a,"group_chats":b}
+    # return b
+    # return {"user": a, "group_chats": b}
+    try:
+        a, b,c = await user_crud.get_or_create_user(db, user, device_token)
+        # a = await user_crud.get_or_create_user(db, user, device_token)
+
+        # print(f"user.groups2:{a.groups}")
+        print("User object:")
+        # for user_obj in a:
+        # print(a.dict())
+        return {"user": a , "groups": b,"group_chats": c}
+    except Exception as e:
+        print(f"get_or_create_user でエラーが発生しました: {e}")
+        import traceback
+        traceback.print_exc()
+
 

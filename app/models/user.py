@@ -17,7 +17,9 @@ class User(Base):
     user_detail = relationship(
         "UserDetail", back_populates="user", uselist=False)
     # groups = relationship('Group', secondary="group_users", back_populates='users', overlaps='group_users')
-    groups = relationship('Group', secondary="group_users", back_populates='users', overlaps='group_users', lazy='selectin')
+    # groups = relationship('Group', secondary="group_users", back_populates='users', overlaps='group_users', lazy='selectin')
+    groups = relationship('Group', secondary="group_users", back_populates='users', overlaps='group_users')
+
 
     # groups = relationship('Group', secondary="group_users")
 
