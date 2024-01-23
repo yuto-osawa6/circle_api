@@ -14,6 +14,12 @@ COPY pyproject.toml* poetry.lock* ./
 RUN poetry config virtualenvs.in-project true
 RUN if [ -f pyproject.toml ]; then poetry install; fi
 
+# Redisをインストール
+RUN apt-get update && \
+    apt-get install -y redis-server && \
+    rm -rf /var/lib/apt/lists/*
+
 
 COPY ./app /app
-CMD ["poetry", "run","uvicorn","--reload","app.main:app","--host","0.0.0.0","--port","8080"]
+# CMD ["poetry", "run","uvicorn","--reload","app.main:app","--host","0.0.0.0","--port","8000"]
+CMD ["poetry", "run", "uvicorn", "--reload", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--log-level", "debug", "--access-log"]
